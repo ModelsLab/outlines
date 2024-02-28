@@ -60,8 +60,8 @@ class Transformer:
 
     def __init__(
         self,
-        model: "PreTrainedModel",
-        tokenizer: "PreTrainedTokenizer",
+        model,
+        tokenizer,
     ):
         self.device = model.device
         self.model = model
@@ -95,7 +95,6 @@ class Transformer:
 
         if past_key_values:
             input_ids = input_ids[..., -1].unsqueeze(-1)
-
         output = self.model(
             input_ids,
             attention_mask=attention_mask,
@@ -122,14 +121,13 @@ class Transformer:
 class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
-    def __init__(self, model_name: str, **kwargs):
-        from transformers import AutoTokenizer
+    def __init__(self, tokenizer, **kwargs):
+        
 
         kwargs.setdefault("padding_side", "left")
-        self.model_name = model_name
         # TODO: Do something to make this hashable?
         self.kwargs = kwargs
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, **kwargs)
+        self.tokenizer = tokenizer
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
 
@@ -181,7 +179,8 @@ class TransformerTokenizer(Tokenizer):
 
 
 def transformers(
-    model_name: str,
+    model: str,
+    tokenizer : str,
     device: Optional[str] = None,
     model_kwargs: dict = {},
     tokenizer_kwargs: dict = {},
@@ -217,7 +216,7 @@ def transformers(
     if device is not None:
         model_kwargs["device_map"] = device
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
+    # model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+    tokenizer = TransformerTokenizer(tokenizer, **tokenizer_kwargs)
 
     return Transformer(model, tokenizer)
